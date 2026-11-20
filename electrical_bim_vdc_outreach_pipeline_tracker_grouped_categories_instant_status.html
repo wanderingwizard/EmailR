@@ -1,0 +1,2078 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VDC Pipeline & Outreach Command Center</title>
+  <!-- Load Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Load Inter Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+          },
+          colors: {
+            slate: {
+              850: '#151e2e',
+              925: '#0b1120',
+            }
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    /* Custom subtle scrollbars and dark-mode polish */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0f172a;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #475569;
+    }
+    .tabular-nums {
+      font-variant-numeric: tabular-nums;
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans antialiased min-h-screen flex flex-col selection:bg-sky-500/30 selection:text-sky-200">
+
+  <!-- Top Navigation Bar -->
+  <header class="sticky top-0 z-30 bg-slate-900/95 backdrop-blur border-b border-slate-800">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-3 min-w-0">
+        <!-- Inline SVG Logo Mark -->
+        <div class="w-10 h-10 rounded-xl bg-sky-500/15 border border-sky-400/30 flex items-center justify-center shrink-0 text-sky-400">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+          </svg>
+        </div>
+        <div class="min-w-0">
+          <div class="flex items-center gap-2 flex-wrap">
+            <h1 class="text-base sm:text-lg font-bold tracking-tight text-white truncate">
+              Electrical VDC Outreach &amp; Pipeline
+            </h1>
+            <span class="px-2 py-0.5 text-xs font-medium rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+              LOD 350 / Trimble / Duct Banks
+            </span>
+          </div>
+          <p class="text-xs text-slate-400 truncate">
+            Grouped Status Categories • Instant Status Checks • 4-Day Follow-Up Queue • Webhook Blueprint
+          </p>
+        </div>
+      </div>
+
+      <!-- Primary Action Buttons -->
+      <div class="flex items-center gap-2 flex-wrap">
+        <button
+          id="openGuideBtn"
+          type="button"
+          class="px-3 py-2 text-xs sm:text-sm font-medium rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition flex items-center gap-1.5 cursor-pointer"
+        >
+          <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+          </svg>
+          <span>Free Hosting &amp; Webhooks Guide</span>
+        </button>
+
+        <button
+          id="openAddModalBtn"
+          type="button"
+          class="px-3.5 py-2 text-xs sm:text-sm font-semibold rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 shadow-lg shadow-sky-500/20 transition flex items-center gap-1.5 cursor-pointer"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+          </svg>
+          <span>Add Contractor</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Toast / Status Banner Container (Replaces alert()) -->
+  <div id="toastContainer" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none px-4 sm:px-0"></div>
+
+  <!-- Main Content -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+    <!-- 1. Top KPI Summary Cards -->
+    <section aria-label="Pipeline KPI Summary" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3.5">
+      <!-- Total Companies -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-sm">
+        <div class="text-xs font-medium text-slate-400">Total Companies</div>
+        <div id="kpiTotalCompanies" class="mt-1.5 text-2xl font-bold text-white tabular-nums">0</div>
+        <div id="kpiNewCount" class="mt-1 text-xs text-slate-400 tabular-nums">0 uncontacted</div>
+      </div>
+
+      <!-- Emails Sent -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-sm">
+        <div class="text-xs font-medium text-slate-400">Emails Sent</div>
+        <div id="kpiEmailsSent" class="mt-1.5 text-2xl font-bold text-sky-400 tabular-nums">0</div>
+        <div id="kpiFollowUpsSent" class="mt-1 text-xs text-slate-400 tabular-nums">0 follow-ups sent</div>
+      </div>
+
+      <!-- Opened -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-sm">
+        <div class="text-xs font-medium text-slate-400">Opened</div>
+        <div class="mt-1.5 flex items-baseline gap-2">
+          <span id="kpiOpened" class="text-2xl font-bold text-indigo-400 tabular-nums">0</span>
+          <span id="kpiOpenRate" class="text-xs font-semibold px-1.5 py-0.5 rounded-md bg-indigo-500/15 text-indigo-300 tabular-nums">0%</span>
+        </div>
+        <div id="kpiTotalOpens" class="mt-1 text-xs text-slate-400 tabular-nums">0 total pixel opens</div>
+      </div>
+
+      <!-- Responded -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-sm">
+        <div class="text-xs font-medium text-slate-400">Responded</div>
+        <div class="mt-1.5 flex items-baseline gap-2">
+          <span id="kpiResponded" class="text-2xl font-bold text-emerald-400 tabular-nums">0</span>
+          <span id="kpiReplyRate" class="text-xs font-semibold px-1.5 py-0.5 rounded-md bg-emerald-500/15 text-emerald-300 tabular-nums">0%</span>
+        </div>
+        <div class="mt-1 text-xs text-slate-400">Active email replies</div>
+      </div>
+
+      <!-- Calls Scheduled -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-sm">
+        <div class="text-xs font-medium text-slate-400">Calls Scheduled</div>
+        <div id="kpiCallsScheduled" class="mt-1.5 text-2xl font-bold text-amber-400 tabular-nums">0</div>
+        <div id="kpiBidsSent" class="mt-1 text-xs text-slate-400 tabular-nums">0 bids in play</div>
+      </div>
+
+      <!-- Pipeline & Won Value -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-sm">
+        <div class="text-xs font-medium text-slate-400">Pipeline / Won ($)</div>
+        <div id="kpiPipelineValue" class="mt-1.5 text-xl font-bold text-white tabular-nums">$0</div>
+        <div id="kpiWonValue" class="mt-1 text-xs font-semibold text-emerald-400 tabular-nums">$0 won</div>
+      </div>
+    </section>
+
+    <!-- 5. Automated 4-Day Follow-Up Queue Banner -->
+    <section id="followUpSection" aria-label="4-Day Follow-Up Queue" class="bg-amber-950/25 border border-amber-500/35 rounded-2xl p-4 sm:p-5">
+      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 mb-3">
+        <div class="flex items-start gap-3">
+          <div class="w-9 h-9 rounded-xl bg-amber-500/20 border border-amber-400/30 flex items-center justify-center shrink-0 text-amber-300 mt-0.5">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <div>
+            <div class="flex items-center gap-2 flex-wrap">
+              <h2 class="text-sm sm:text-base font-bold text-amber-200">
+                4-Day Follow-Up Queue
+              </h2>
+              <span id="followUpDueBadge" class="px-2 py-0.5 text-xs font-bold rounded-full bg-amber-500/25 text-amber-200 border border-amber-400/40 tabular-nums">
+                0 Due / Overdue
+              </span>
+            </div>
+            <p class="text-xs text-amber-100/75 mt-0.5">
+              Contacts emailed 4+ days ago with no reply yet and no follow-up sent. Automatically stops alerting once they reply or book a call.
+            </p>
+          </div>
+        </div>
+
+        <!-- Quick Simulation Helper for Testing Follow-Ups -->
+        <div class="flex items-center gap-2 flex-wrap">
+          <button
+            id="simulate4DaysElapsedBtn"
+            type="button"
+            class="px-3 py-1.5 text-xs font-medium rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-200 border border-amber-400/30 transition cursor-pointer"
+            title="Shifts sent_at dates back by 4 days on Sent/Opened contacts so you can test the 4-day follow-up queue immediately"
+          >
+            Simulate +4 Days Elapsed
+          </button>
+        </div>
+      </div>
+
+      <!-- Queue Cards / List -->
+      <div id="followUpQueueList" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3"></div>
+    </section>
+
+    <!-- 2. Filter, Search & Sort Controls + Data Utility Bar -->
+    <section aria-label="Filters and Controls" class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+        <!-- Search Input -->
+        <div class="lg:col-span-2 relative">
+          <label for="searchInput" class="sr-only">Search company or estimator</label>
+          <svg class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 104.5 4.5a7.5 7.5 0 0012.15 12.15z" />
+          </svg>
+          <input
+            id="searchInput"
+            type="text"
+            placeholder="Search contractor, city, or estimator..."
+            class="w-full pl-10 pr-3 py-2 text-sm bg-slate-950 border border-slate-700 focus:border-sky-500 focus:ring-1 focus:ring-sky-500 rounded-xl text-white placeholder-slate-500 outline-none transition"
+          />
+        </div>
+
+        <!-- Stage Filter -->
+        <div>
+          <label for="stageFilter" class="sr-only">Filter by Stage</label>
+          <select
+            id="stageFilter"
+            class="w-full px-3 py-2 text-sm bg-slate-950 border border-slate-700 focus:border-sky-500 rounded-xl text-slate-100 outline-none transition cursor-pointer"
+          >
+            <option value="All">Stage: All Stages</option>
+            <option value="New">New</option>
+            <option value="Sent">Sent</option>
+            <option value="Opened">Opened</option>
+            <option value="Replied">Replied</option>
+            <option value="Call Scheduled">Call Scheduled</option>
+            <option value="Bid Sent">Bid Sent</option>
+            <option value="Won">Won</option>
+            <option value="Lost">Lost</option>
+          </select>
+        </div>
+
+        <!-- Region Filter -->
+        <div>
+          <label for="regionFilter" class="sr-only">Filter by Region</label>
+          <select
+            id="regionFilter"
+            class="w-full px-3 py-2 text-sm bg-slate-950 border border-slate-700 focus:border-sky-500 rounded-xl text-slate-100 outline-none transition cursor-pointer"
+          >
+            <option value="All">Region: All Regions</option>
+            <option value="Beloit/Janesville">Beloit/Janesville</option>
+            <option value="Madison">Madison</option>
+            <option value="Milwaukee">Milwaukee</option>
+            <option value="Northern IL">Northern IL</option>
+            <option value="Midwest">Midwest</option>
+          </select>
+        </div>
+
+        <!-- Sort Selector -->
+        <div>
+          <label for="sortSelect" class="sr-only">Sort Contractors</label>
+          <select
+            id="sortSelect"
+            class="w-full px-3 py-2 text-sm bg-slate-950 border border-slate-700 focus:border-sky-500 rounded-xl text-slate-100 outline-none transition cursor-pointer"
+          >
+            <option value="stage_priority">Sort: Stage Priority</option>
+            <option value="follow_up_due">Sort: Follow-Up Due Date</option>
+            <option value="last_opened">Sort: Last Opened</option>
+            <option value="deal_value">Sort: Estimated Deal Value ($)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Secondary Bar: Active Result Count + Expand/Collapse All + JSON Export / Import / Reset -->
+      <div class="pt-3 border-t border-slate-800/80 flex flex-wrap items-center justify-between gap-3 text-xs">
+        <div class="flex items-center gap-2 text-slate-400">
+          <span id="visibleCountLabel" class="font-medium text-slate-200 tabular-nums">0 contractors shown</span>
+          <span>•</span>
+          <span>Saved locally in browser</span>
+        </div>
+
+        <div class="flex items-center gap-2 flex-wrap">
+          <button
+            id="expandAllGroupsBtn"
+            type="button"
+            class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-medium transition cursor-pointer"
+          >
+            Expand All
+          </button>
+          <button
+            id="collapseAllGroupsBtn"
+            type="button"
+            class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-medium transition cursor-pointer"
+          >
+            Collapse All
+          </button>
+          <button
+            id="exportJsonBtn"
+            type="button"
+            class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-medium transition cursor-pointer"
+          >
+            Export JSON
+          </button>
+          <label class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-medium transition cursor-pointer">
+            Import JSON
+            <input id="importJsonInput" type="file" accept="application/json,.json" class="hidden" />
+          </label>
+          <button
+            id="resetSampleBtn"
+            type="button"
+            class="px-3 py-1.5 rounded-lg bg-rose-950/40 hover:bg-rose-900/50 text-rose-300 border border-rose-500/30 font-medium transition cursor-pointer"
+          >
+            Reset Sample Data
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. Categorized Pipeline Sections (Collapsible Groups + Instant Status Checks) -->
+    <section id="categorizedPipelineContainer" aria-label="Categorized Contractor Pipeline" class="space-y-4">
+      <div id="categoryGroupsList" class="space-y-4"></div>
+
+      <!-- Empty State -->
+      <div id="emptyState" class="hidden bg-slate-900 border border-slate-800 rounded-2xl py-14 px-6 text-center">
+        <div class="mx-auto w-12 h-12 rounded-2xl bg-slate-800 flex items-center justify-center text-slate-400 mb-3">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+        </div>
+        <h3 class="text-base font-semibold text-white">No electrical contractors match your filters</h3>
+        <p class="text-xs text-slate-400 mt-1 max-w-md mx-auto">
+          Try clearing your search or stage/region filter, or add a new commercial electrical contractor to start outreach.
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <!-- ===================================================================== -->
+  <!-- MODAL / DRAWER 1: ADD NEW CONTRACTOR                                  -->
+  <!-- ===================================================================== -->
+  <div id="addContractorModal" class="fixed inset-0 z-40 hidden items-center justify-center bg-slate-950/80 backdrop-blur-xs p-4 overflow-y-auto">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-2xl w-full p-5 sm:p-6 shadow-2xl my-8">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+        <div>
+          <h2 class="text-lg font-bold text-white">Add Commercial Electrical Contractor</h2>
+          <p class="text-xs text-slate-400">Set up contact info, estimated fixed-fee deal size, and custom outreach / 4-day follow-up templates.</p>
+        </div>
+        <button type="button" data-close-modal="addContractorModal" class="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 cursor-pointer">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <form id="addContractorForm" class="mt-4 space-y-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label for="newCompanyName" class="block text-xs font-semibold text-slate-300 mb-1">Company Name *</label>
+            <input id="newCompanyName" type="text" required placeholder="e.g., Stateline Power & Control" class="w-full px-3 py-2 text-sm bg-slate-950 border border-slate-700 focus:border-sky-500 rounded-xl text-white outline-none" />
+          </div>
+
+          <div>
+            <label for="newRegion" class="block text-xs font-semibold text-slate-300 mb-1">Region *</label>
+            <select id="newRegion" required class="w-full px-3 py-2 text-sm bg-slate-950 border border-slate-700 focus:border-sky-500 rounded-xl text-white outline-none cursor-pointer">
+              <option value="Beloit/Janesville">Beloit/Janesville</option>
+              <option value="Madison">Madison</option>
+              <option value="Milwaukee">Milwaukee</option>
+              <option value="Northern IL">Northern IL</option>
+              <option value="Midwest">Midwest</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="newEstimatorName" class="block text-xs font-semibold text-slate-300 mb-1">Estimator / Precon Name *</label>
+            <input id="newEstimatorName" type="text" required placeholder="e.g., Dan Kowalski" class="w-full px-3 py-2 text-sm bg-slate-950 border border-slate-700 focus:border-sky-500 rounded-xl text-white outline-none" />
+          </div>
+
+          <div>
+            <label for="newEmail" class="block text-xs font-semibold text-slate-300 mb-1">Email Address *</label>
+            <input id="newEmail" type="email" required placeholder="estimating@contractor.com" class="w-full px-3 py-2 text-sm bg-slate-950 border border-slate-700 focus:border-sky-500 rounded-xl text-white outline-none" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label for="newDealValue" class="block text-xs font-semibold text-slate-300 mb-1">Estimated Fixed-Fee Deal ($)</label>
+            <input id="newDealValue" type="number" min="500" step="250" value="16500" class="w-full px-3 py-2 text-sm bg-slate-950 border border-slate-700 focus:border-sky-500 rounded-xl text-white outline-none tabular-nums" />
+          </div>
+
+          <div>
+            <label for="newNotes" class="block text-xs font-semibold text-slate-300 mb-1">Initial Note / Target Scope</label>
+            <input id="newNotes" type="text" placeholder="e.g., Commercial/industrial bids, duct banks + Trimble points" class="w-full px-3 py-2 text-sm bg-slate-950 border border-slate-700 focus:border-sky-500 rounded-xl text-white outline-none" />
+          </div>
+        </div>
+
+        <div class="border-t border-slate-800 pt-4 space-y-3">
+          <div class="text-xs font-bold uppercase tracking-wider text-sky-400">Initial Outreach Email Template</div>
+          <div>
+            <label for="newInitialSubject" class="block text-xs font-medium text-slate-300 mb-1">Subject Line</label>
+            <input id="newInitialSubject" type="text" class="w-full px-3 py-2 text-sm bg-slate-950 border border-slate-700 focus:border-sky-500 rounded-xl text-white outline-none" />
+          </div>
+          <div>
+            <label for="newInitialBody" class="block text-xs font-medium text-slate-300 mb-1">Email Body</label>
+            <textarea id="newInitialBody" rows="4" class="w-full px-3 py-2 text-xs sm:text-sm bg-slate-950 border border-slate-700 focus:border-sky-500 rounded-xl text-white outline-none leading-relaxed"></textarea>
+          </div>
+        </div>
+
+        <div class="border-t border-slate-800 pt-4 space-y-3">
+          <div class="text-xs font-bold uppercase tracking-wider text-amber-400">4-Day Follow-Up Email Template</div>
+          <div>
+            <label for="newFollowUpSubject" class="block text-xs font-medium text-slate-300 mb-1">Follow-Up Subject</label>
+            <input id="newFollowUpSubject" type="text" class="w-full px-3 py-2 text-sm bg-slate-950 border border-slate-700 focus:border-sky-500 rounded-xl text-white outline-none" />
+          </div>
+          <div>
+            <label for="newFollowUpBody" class="block text-xs font-medium text-slate-300 mb-1">Follow-Up Body</label>
+            <textarea id="newFollowUpBody" rows="3" class="w-full px-3 py-2 text-xs sm:text-sm bg-slate-950 border border-slate-700 focus:border-sky-500 rounded-xl text-white outline-none leading-relaxed"></textarea>
+          </div>
+        </div>
+
+        <div class="pt-3 border-t border-slate-800 flex items-center justify-end gap-2.5">
+          <button type="button" data-close-modal="addContractorModal" class="px-4 py-2 text-sm font-medium rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 cursor-pointer">
+            Cancel
+          </button>
+          <button type="submit" class="px-4 py-2 text-sm font-semibold rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 transition cursor-pointer">
+            Save Contractor
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- MODAL 2: LOG / SIMULATE REPLY                                         -->
+  <!-- ===================================================================== -->
+  <div id="replyModal" class="fixed inset-0 z-40 hidden items-center justify-center bg-slate-950/80 backdrop-blur-xs p-4">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-lg w-full p-5 sm:p-6 shadow-2xl">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+        <div>
+          <h2 class="text-lg font-bold text-white">Log / Simulate Estimator Reply</h2>
+          <p id="replyModalSubtitle" class="text-xs text-slate-400"></p>
+        </div>
+        <button type="button" data-close-modal="replyModal" class="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 cursor-pointer">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <form id="replyForm" class="mt-4 space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1.5">Quick Sample Replies (Click to Fill)</label>
+          <div class="flex flex-wrap gap-1.5">
+            <button type="button" class="sample-reply-btn px-2.5 py-1 text-xs rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 cursor-pointer">
+              "Send us a fixed-fee number for the school gear room &amp; duct bank."
+            </button>
+            <button type="button" class="sample-reply-btn px-2.5 py-1 text-xs rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 cursor-pointer">
+              "Let's hop on a quick 10-min call this week about Trimble points."
+            </button>
+            <button type="button" class="sample-reply-btn px-2.5 py-1 text-xs rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 cursor-pointer">
+              "Nothing bidding right now, keep us on your list for next month."
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <label for="replyTextInput" class="block text-xs font-semibold text-slate-300 mb-1">Reply Message *</label>
+          <textarea id="replyTextInput" rows="4" required placeholder="Paste or type the estimator's reply..." class="w-full px-3 py-2 text-sm bg-slate-950 border border-slate-700 focus:border-emerald-500 rounded-xl text-white outline-none"></textarea>
+        </div>
+
+        <div class="flex items-center justify-end gap-2 pt-2">
+          <button type="button" data-close-modal="replyModal" class="px-4 py-2 text-sm font-medium rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 cursor-pointer">
+            Cancel
+          </button>
+          <button type="submit" class="px-4 py-2 text-sm font-semibold rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 transition cursor-pointer">
+            Mark as Replied
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- MODAL 3: SCHEDULE CALL                                                -->
+  <!-- ===================================================================== -->
+  <div id="scheduleCallModal" class="fixed inset-0 z-40 hidden items-center justify-center bg-slate-950/80 backdrop-blur-xs p-4">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full p-5 sm:p-6 shadow-2xl">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+        <div>
+          <h2 class="text-lg font-bold text-white">Schedule Scoping / Bid Call</h2>
+          <p id="scheduleModalSubtitle" class="text-xs text-slate-400"></p>
+        </div>
+        <button type="button" data-close-modal="scheduleCallModal" class="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 cursor-pointer">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <form id="scheduleCallForm" class="mt-4 space-y-4">
+        <div>
+          <label for="callDateTimeInput" class="block text-xs font-semibold text-slate-300 mb-1">Date &amp; Time *</label>
+          <input id="callDateTimeInput" type="datetime-local" required class="w-full px-3 py-2 text-sm bg-slate-950 border border-slate-700 focus:border-amber-500 rounded-xl text-white outline-none" />
+        </div>
+
+        <div>
+          <label for="callTopicInput" class="block text-xs font-semibold text-slate-300 mb-1">Call Agenda / Bid Focus</label>
+          <input id="callTopicInput" type="text" placeholder="e.g., Review E-sheets, BEP conduit cutoff, and Trimble CSV scope" class="w-full px-3 py-2 text-sm bg-slate-950 border border-slate-700 focus:border-amber-500 rounded-xl text-white outline-none" />
+        </div>
+
+        <div class="flex items-center justify-end gap-2 pt-2">
+          <button type="button" data-close-modal="scheduleCallModal" class="px-4 py-2 text-sm font-medium rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 cursor-pointer">
+            Cancel
+          </button>
+          <button type="submit" class="px-4 py-2 text-sm font-semibold rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 transition cursor-pointer">
+            Confirm Call
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- DRAWER / MODAL 4: CONTRACTOR DETAIL, TEMPLATES & ACTIVITY LOG         -->
+  <!-- ===================================================================== -->
+  <div id="detailDrawer" class="fixed inset-0 z-40 hidden justify-end bg-slate-950/75 backdrop-blur-xs">
+    <div class="bg-slate-900 border-l border-slate-800 w-full max-w-2xl h-full overflow-y-auto p-5 sm:p-6 shadow-2xl flex flex-col justify-between space-y-6">
+      <div id="detailDrawerContent" class="space-y-6"></div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- MODAL 5: BACKEND / REAL WEBHOOK & FREE HOSTING GUIDE                  -->
+  <!-- ===================================================================== -->
+  <div id="guideModal" class="fixed inset-0 z-40 hidden items-center justify-center bg-slate-950/80 backdrop-blur-xs p-4 overflow-y-auto">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-3xl w-full p-5 sm:p-6 shadow-2xl my-8 space-y-5">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+        <div>
+          <h2 class="text-lg font-bold text-white">Free Hosting &amp; Real Webhook Blueprint</h2>
+          <p class="text-xs text-slate-400">How to host this app for $0 and connect real open pixels, reply webhooks, and call bookings later.</p>
+        </div>
+        <button type="button" data-close-modal="guideModal" class="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 cursor-pointer">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <div class="space-y-4 text-xs sm:text-sm text-slate-300 leading-relaxed max-h-[72vh] overflow-y-auto pr-1">
+        <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-2">
+          <h3 class="font-bold text-sky-400">1. How to Host a Free Website ($0/mo)</h3>
+          <ul class="list-disc pl-5 space-y-1.5 text-slate-300">
+            <li><strong>GitHub Pages:</strong> Create a free GitHub account, create a repository, upload <code class="text-sky-300">index.html</code>, and enable <em>Settings &rarr; Pages &rarr; Deploy from main branch</em>. You get a free <code class="text-sky-300">https://username.github.io/repo/</code> URL.</li>
+            <li><strong>Cloudflare Pages or Vercel:</strong> Drag and drop or connect your repo for instant global HTTPS hosting on a free tier.</li>
+            <li><strong>Custom Domain (Optional):</strong> Buy a <code class="text-slate-100">.com</code> domain (~$10–$12/yr) and point DNS records to your free host so your tracking pixel and reply addresses use your own domain.</li>
+          </ul>
+        </div>
+
+        <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-2">
+          <h3 class="font-bold text-indigo-400">2. Real Email Open Pixel Endpoint</h3>
+          <p>When sending HTML outreach emails via an API or serverless function (e.g., Cloudflare Worker, Vercel Function, or Supabase Edge Function), append a unique 1x1 tracking pixel:</p>
+          <pre class="bg-slate-900 border border-slate-800 rounded-lg p-3 text-xs text-emerald-300 overflow-x-auto">&lt;img src="https://api.yourdomain.com/track/open?msg=MSG_10492" width="1" height="1" alt="" style="display:block;" /&gt;</pre>
+          <p class="text-xs text-slate-400">Your endpoint logs the open timestamp + count in Postgres/Supabase and returns a 1x1 transparent GIF/PNG with <code class="text-slate-200">Cache-Control: no-store</code>. Note: Corporate mail scanners and Apple Mail Privacy can trigger automated pre-fetches.</p>
+        </div>
+
+        <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-2">
+          <h3 class="font-bold text-emerald-400">3. Real Inbound Email Reply Webhook</h3>
+          <p>Send emails using a provider with inbound reply routing (such as <strong>Resend</strong>, <strong>Postmark</strong>, or <strong>SendGrid Inbound Parse</strong>) with a <code class="text-sky-300">Reply-To</code> like <code class="text-sky-300">reply+MSG_10492@inbound.yourdomain.com</code>.</p>
+          <p class="text-xs text-slate-400">When the estimator hits Reply, the provider POSTs the sender, subject, and plain/HTML body to <code class="text-slate-200">/webhooks/email-reply</code>. Your backend matches <code class="text-slate-200">MSG_10492</code>, inserts into <code class="text-slate-200">activities</code>, updates stage to <code class="text-slate-200">Replied</code>, and cancels pending 4-day follow-up automation.</p>
+        </div>
+
+        <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-2">
+          <h3 class="font-bold text-amber-400">4. Real Call Booking Webhook (Cal.com / Calendly)</h3>
+          <p>Include a scheduling link with the prospect's email prefilled (e.g., <code class="text-sky-300">https://cal.com/yourname/vdc-scoping?email=dan@contractor.com</code>). Configure a webhook subscription on <code class="text-slate-200">BOOKING_CREATED</code> / <code class="text-slate-200">invitee.created</code> pointing to <code class="text-slate-200">/webhooks/call-booked</code> to set <code class="text-slate-200">call_scheduled_at</code> and move the stage to <code class="text-slate-200">Call Scheduled</code>.</p>
+        </div>
+      </div>
+
+      <div class="pt-3 border-t border-slate-800 flex justify-end">
+        <button type="button" data-close-modal="guideModal" class="px-4 py-2 text-sm font-semibold rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 cursor-pointer">
+          Got It
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- APPLICATION JAVASCRIPT                                                  -->
+  <!-- ===================================================================== -->
+  <script>
+    (function () {
+      'use strict';
+
+      // Constants & Storage Keys
+      const STORAGE_KEY = 'vdc_outreach_pipeline_v1';
+      const FOUR_DAYS_MS = 4 * 24 * 60 * 60 * 1000;
+
+      const STAGES = [
+        'New',
+        'Sent',
+        'Opened',
+        'Replied',
+        'Call Scheduled',
+        'Bid Sent',
+        'Won',
+        'Lost'
+      ];
+
+      // Category buckets so prospects are grouped cleanly without endless scrolling
+      const CATEGORY_GROUPS = [
+        {
+          id: 'action_followup',
+          title: 'Needs Action / 4-Day Follow-Up Due',
+          subtitle: 'Emailed 4+ days ago with no reply or call booked yet—bump these first.',
+          accentClass: 'border-amber-500/40 bg-amber-950/20',
+          badgeClass: 'bg-amber-500/20 text-amber-200 border-amber-400/40',
+          defaultCollapsed: false,
+          match: (c) => isFollowUpDue(c)
+        },
+        {
+          id: 'hot_engaged',
+          title: 'Replied, Call Scheduled & Bid Sent',
+          subtitle: 'Warm estimators actively scoping projects, booking calls, or reviewing fixed-fee quotes.',
+          accentClass: 'border-emerald-500/35 bg-emerald-950/15',
+          badgeClass: 'bg-emerald-500/20 text-emerald-200 border-emerald-400/40',
+          defaultCollapsed: false,
+          match: (c) => !isFollowUpDue(c) && ['Replied', 'Call Scheduled', 'Bid Sent'].includes(c.stage)
+        },
+        {
+          id: 'sent_opened',
+          title: 'Sent & Opened (Waiting on Response)',
+          subtitle: 'Outreach delivered within the 4-day follow-up window; watch pixel opens and replies.',
+          accentClass: 'border-indigo-500/35 bg-slate-900',
+          badgeClass: 'bg-indigo-500/20 text-indigo-200 border-indigo-400/40',
+          defaultCollapsed: false,
+          match: (c) => !isFollowUpDue(c) && ['Sent', 'Opened'].includes(c.stage)
+        },
+        {
+          id: 'new_ready',
+          title: 'New / Ready to Send',
+          subtitle: 'Qualified commercial electrical contractors queued for your next 5:15 PM outreach block.',
+          accentClass: 'border-sky-500/30 bg-slate-900',
+          badgeClass: 'bg-sky-500/20 text-sky-200 border-sky-400/40',
+          defaultCollapsed: false,
+          match: (c) => !isFollowUpDue(c) && c.stage === 'New'
+        },
+        {
+          id: 'won_closed',
+          title: 'Won & Closed',
+          subtitle: 'Signed fixed-fee contracts and closed/lost cycles (collapsed by default to keep active work front-and-center).',
+          accentClass: 'border-slate-700/80 bg-slate-900/80',
+          badgeClass: 'bg-slate-800 text-slate-300 border-slate-700',
+          defaultCollapsed: true,
+          match: (c) => !isFollowUpDue(c) && ['Won', 'Lost'].includes(c.stage)
+        }
+      ];
+
+      // Higher number = higher priority in stage_priority sort
+      const STAGE_PRIORITY = {
+        'Call Scheduled': 8,
+        'Replied': 7,
+        'Bid Sent': 6,
+        'Opened': 5,
+        'Sent': 4,
+        'New': 3,
+        'Won': 2,
+        'Lost': 1
+      };
+
+      const STAGE_BADGE_CLASSES = {
+        'New': 'bg-slate-800 text-slate-300 border-slate-700',
+        'Sent': 'bg-sky-500/15 text-sky-300 border-sky-500/35',
+        'Opened': 'bg-indigo-500/15 text-indigo-300 border-indigo-500/35',
+        'Replied': 'bg-emerald-500/15 text-emerald-300 border-emerald-500/35',
+        'Call Scheduled': 'bg-amber-500/15 text-amber-300 border-amber-500/35',
+        'Bid Sent': 'bg-purple-500/15 text-purple-300 border-purple-500/35',
+        'Won': 'bg-teal-500/20 text-teal-200 border-teal-400/40',
+        'Lost': 'bg-rose-500/15 text-rose-300 border-rose-500/35'
+      };
+
+      // Default Email Templates Generator
+      function getDefaultTemplates(companyName, estimatorName, region) {
+        const firstName = (estimatorName || 'there').split(' ')[0];
+        return {
+          initialSubject: `LOD 350 electrical BIM & Trimble layout overflow for ${companyName}`,
+          initialBody:
+`Hi ${firstName} —
+
+I'm an independent electrical BIM / VDC detailer based in southern Wisconsin (former field & prefab electrician) specializing in LOD 350 feeder/gear coordination, underground duct bank shop drawings, and Trimble Field Link CSV point exports.
+
+When ${companyName} is bidding commercial or industrial work around ${region} with a tight GC BIM requirement—or your internal detailers are slammed—I plug in on a fixed-fee basis so you can drop a clean lump-sum VDC number straight into your estimate.
+
+Happy to share a 1-page capability sheet and redacted duct bank / Trimble samples. Do you have any upcoming bids over the next 30–60 days where fixed-fee VDC pricing would help?
+
+Best,
+[Your Name]
+Electrical BIM / VDC Consulting`,
+          followUpSubject: `Re: LOD 350 electrical BIM & Trimble layout overflow for ${companyName}`,
+          followUpBody:
+`Hi ${firstName} —
+
+Bumping this up in case ${companyName} is pricing any commercial or industrial jobs this week. I'm happy to review a bid set and BEP at no cost to give you a firm fixed-fee coordination, duct bank, and Trimble point number before bid day.
+
+Let me know if anything is on your desk.
+
+Best,
+[Your Name]`
+        };
+      }
+
+      // Realistic Seed Data Across Target Regions
+      function createSampleData() {
+        const now = Date.now();
+        const day = 24 * 60 * 60 * 1000;
+        const hour = 60 * 60 * 1000;
+
+        const seedSpecs = [
+          {
+            id: 'cmp_101',
+            companyName: 'Rock River Commercial Electric',
+            region: 'Beloit/Janesville',
+            estimatorName: 'Mike Halvorsen',
+            email: 'mhalvorsen@rockriverelectric-example.com',
+            dealValue: 18500,
+            stage: 'Sent',
+            createdAt: now - 6 * day,
+            sentAt: now - 4.5 * day, // Overdue for 4-day follow-up!
+            followUpDueAt: now - 0.5 * day,
+            followUpSentAt: null,
+            openCount: 0,
+            lastOpenedAt: null,
+            repliedAt: null,
+            callScheduledAt: null,
+            notes: 'Mid-sized commercial/industrial shop; GC BIM spec on upcoming school addition.',
+            logs: [
+              { type: 'created', text: 'Contractor added to pipeline (Beloit/Janesville).', at: now - 6 * day },
+              { type: 'sent', text: 'Initial LOD 350 & Trimble outreach email sent.', at: now - 4.5 * day }
+            ]
+          },
+          {
+            id: 'cmp_102',
+            companyName: 'Isthmus Power & Controls LLC',
+            region: 'Madison',
+            estimatorName: 'Rachel Lindstrom',
+            email: 'estimating@isthmuspower-example.com',
+            dealValue: 24000,
+            stage: 'Opened',
+            createdAt: now - 5 * day,
+            sentAt: now - 4.2 * day, // Also due for 4-day follow-up!
+            followUpDueAt: now - 0.2 * day,
+            followUpSentAt: null,
+            openCount: 3,
+            lastOpenedAt: now - 14 * hour,
+            repliedAt: null,
+            callScheduledAt: null,
+            notes: 'Bids medical clinics, labs, and commercial build-outs in Dane County.',
+            logs: [
+              { type: 'created', text: 'Contractor added to pipeline (Madison).', at: now - 5 * day },
+              { type: 'sent', text: 'Initial LOD 350 & Trimble outreach email sent.', at: now - 4.2 * day },
+              { type: 'opened', text: 'Tracking pixel triggered (Open #1).', at: now - 3 * day },
+              { type: 'opened', text: 'Tracking pixel triggered (Open #2).', at: now - 1.5 * day },
+              { type: 'opened', text: 'Tracking pixel triggered (Open #3).', at: now - 14 * hour }
+            ]
+          },
+          {
+            id: 'cmp_103',
+            companyName: 'Lakefront Industrial Electrical',
+            region: 'Milwaukee',
+            estimatorName: 'Greg Nowak',
+            email: 'gnowak@lakefrontelec-example.com',
+            dealValue: 28500,
+            stage: 'Replied',
+            createdAt: now - 7 * day,
+            sentAt: now - 5 * day,
+            followUpDueAt: now - 1 * day,
+            followUpSentAt: null,
+            openCount: 4,
+            lastOpenedAt: now - 18 * hour,
+            repliedAt: now - 16 * hour,
+            callScheduledAt: null,
+            notes: 'Replied asking for fixed-fee scope on main switchgear room + underground duct bank.',
+            logs: [
+              { type: 'created', text: 'Contractor added to pipeline (Milwaukee).', at: now - 7 * day },
+              { type: 'sent', text: 'Initial LOD 350 & Trimble outreach email sent.', at: now - 5 * day },
+              { type: 'opened', text: 'Tracking pixel triggered (Open #1).', at: now - 4 * day },
+              { type: 'replied', text: 'Reply: "Can you send a fixed-fee number for a 2-room gear layout and 450 LF duct bank with Trimble CSV points?"', at: now - 16 * hour }
+            ]
+          },
+          {
+            id: 'cmp_104',
+            companyName: 'Winnebago & Stateline Electric',
+            region: 'Northern IL',
+            estimatorName: 'Carlos Mendez',
+            email: 'bids@statelineelec-example.com',
+            dealValue: 15000,
+            stage: 'Call Scheduled',
+            createdAt: now - 8 * day,
+            sentAt: now - 6 * day,
+            followUpDueAt: now - 2 * day,
+            followUpSentAt: null,
+            openCount: 2,
+            lastOpenedAt: now - 2 * day,
+            repliedAt: now - 1.5 * day,
+            callScheduledAt: now + 1.5 * day,
+            notes: '15-min scoping call booked to review E-sheets and BEP conduit cutoff.',
+            logs: [
+              { type: 'created', text: 'Contractor added to pipeline (Northern IL).', at: now - 8 * day },
+              { type: 'sent', text: 'Initial LOD 350 & Trimble outreach email sent.', at: now - 6 * day },
+              { type: 'opened', text: 'Tracking pixel triggered (Open #1).', at: now - 4.5 * day },
+              { type: 'replied', text: 'Reply: "Let\'s hop on a quick scoping call Thursday afternoon."', at: now - 1.5 * day },
+              { type: 'call', text: 'Scoping call scheduled ("Review E-sheets, BEP conduit cutoff, and Trimble CSV scope").', at: now - 1.4 * day }
+            ]
+          },
+          {
+            id: 'cmp_105',
+            companyName: 'Driftless Valley Power Co.',
+            region: 'Midwest',
+            estimatorName: 'Sarah Callahan',
+            email: 'scallahan@driftlesspower-example.com',
+            dealValue: 21000,
+            stage: 'Bid Sent',
+            createdAt: now - 12 * day,
+            sentAt: now - 10 * day,
+            followUpDueAt: now - 6 * day,
+            followUpSentAt: now - 5.8 * day,
+            openCount: 5,
+            lastOpenedAt: now - 1 * day,
+            repliedAt: now - 4 * day,
+            callScheduledAt: now - 3 * day,
+            notes: 'Sent $21,000 fixed-fee proposal (30/30/30/10 milestones) for cold-storage facility.',
+            logs: [
+              { type: 'created', text: 'Contractor added to pipeline (Midwest).', at: now - 12 * day },
+              { type: 'sent', text: 'Initial LOD 350 & Trimble outreach email sent.', at: now - 10 * day },
+              { type: 'followup', text: '4-Day Follow-Up email sent.', at: now - 5.8 * day },
+              { type: 'replied', text: 'Reply: "Send over the fixed-fee proposal so we can plug it into our bid sheet."', at: now - 4 * day },
+              { type: 'stage', text: 'Stage moved to Bid Sent ($21,000 fixed fee).', at: now - 2 * day }
+            ]
+          },
+          {
+            id: 'cmp_106',
+            companyName: 'Four Lakes Grid & Conduit',
+            region: 'Madison',
+            estimatorName: 'Trevor Olson',
+            email: 'tolson@fourlakesgrid-example.com',
+            dealValue: 19500,
+            stage: 'Won',
+            createdAt: now - 18 * day,
+            sentAt: now - 16 * day,
+            followUpDueAt: now - 12 * day,
+            followUpSentAt: now - 11.8 * day,
+            openCount: 6,
+            lastOpenedAt: now - 5 * day,
+            repliedAt: now - 8 * day,
+            callScheduledAt: now - 7 * day,
+            notes: 'Signed fixed-fee deal! 30% mobilization deposit ($5,850) invoiced.',
+            logs: [
+              { type: 'created', text: 'Contractor added to pipeline (Madison).', at: now - 18 * day },
+              { type: 'sent', text: 'Initial LOD 350 & Trimble outreach email sent.', at: now - 16 * day },
+              { type: 'replied', text: 'Reply: "Approved—send the proposal and W-9 so we can issue a PO."', at: now - 8 * day },
+              { type: 'stage', text: 'Deal marked as Won ($19,500).', at: now - 5 * day }
+            ]
+          },
+          {
+            id: 'cmp_107',
+            companyName: 'Kettle Moraine Electrical Services',
+            region: 'Milwaukee',
+            estimatorName: 'Brianne Schultz',
+            email: 'bschultz@kettlemoraineelec-example.com',
+            dealValue: 14000,
+            stage: 'New',
+            createdAt: now - 1 * day,
+            sentAt: null,
+            followUpDueAt: null,
+            followUpSentAt: null,
+            openCount: 0,
+            lastOpenedAt: null,
+            repliedAt: null,
+            callScheduledAt: null,
+            notes: 'Queued for tonight\'s 5:15 PM outreach block.',
+            logs: [
+              { type: 'created', text: 'Contractor added to pipeline (Milwaukee).', at: now - 1 * day }
+            ]
+          },
+          {
+            id: 'cmp_108',
+            companyName: 'Blackhawk Industrial Wiring',
+            region: 'Beloit/Janesville',
+            estimatorName: 'Kevin Gallagher',
+            email: 'kgallagher@blackhawkwiring-example.com',
+            dealValue: 12500,
+            stage: 'Lost',
+            createdAt: now - 14 * day,
+            sentAt: now - 12 * day,
+            followUpDueAt: now - 8 * day,
+            followUpSentAt: null,
+            openCount: 1,
+            lastOpenedAt: now - 11 * day,
+            repliedAt: now - 7 * day,
+            callScheduledAt: null,
+            notes: 'Lost bid on project; check back in 60 days for next industrial cycle.',
+            logs: [
+              { type: 'created', text: 'Contractor added to pipeline (Beloit/Janesville).', at: now - 14 * day },
+              { type: 'sent', text: 'Initial LOD 350 & Trimble outreach email sent.', at: now - 12 * day },
+              { type: 'stage', text: 'Stage moved to Lost.', at: now - 7 * day }
+            ]
+          }
+        ];
+
+        return seedSpecs.map((item) => {
+          const tpl = getDefaultTemplates(item.companyName, item.estimatorName, item.region);
+          return {
+            ...item,
+            initialSubject: tpl.initialSubject,
+            initialBody: tpl.initialBody,
+            followUpSubject: tpl.followUpSubject,
+            followUpBody: tpl.followUpBody
+          };
+        });
+      }
+
+      // Application State
+      let state = {
+        contractors: [],
+        filters: {
+          search: '',
+          stage: 'All',
+          region: 'All',
+          sort: 'stage_priority'
+        },
+        collapsedGroups: {
+          action_followup: false,
+          hot_engaged: false,
+          sent_opened: false,
+          new_ready: false,
+          won_closed: true
+        },
+        activeReplyId: null,
+        activeScheduleId: null,
+        activeDrawerId: null
+      };
+
+      // Load & Persist State
+      function loadState() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            if (Array.isArray(parsed.contractors)) {
+              state.contractors = parsed.contractors;
+              if (parsed.collapsedGroups && typeof parsed.collapsedGroups === 'object') {
+                state.collapsedGroups = { ...state.collapsedGroups, ...parsed.collapsedGroups };
+              }
+              return;
+            }
+          }
+        } catch (err) {
+          console.error('Failed to read localStorage:', err);
+        }
+        state.contractors = createSampleData();
+        saveState();
+      }
+
+      function saveState() {
+        try {
+          localStorage.setItem(
+            STORAGE_KEY,
+            JSON.stringify({
+              contractors: state.contractors,
+              collapsedGroups: state.collapsedGroups
+            })
+          );
+        } catch (err) {
+          console.error('Failed to save to localStorage:', err);
+          showToast('Warning: Could not save to browser storage.', 'error');
+        }
+      }
+
+      function toggleGroupCollapse(groupId) {
+        state.collapsedGroups[groupId] = !state.collapsedGroups[groupId];
+        saveState();
+        renderPipeline();
+      }
+
+      function setAllGroupsCollapsed(collapsed) {
+        CATEGORY_GROUPS.forEach((g) => {
+          state.collapsedGroups[g.id] = collapsed;
+        });
+        saveState();
+        renderPipeline();
+      }
+
+      // Toast Notification System (No alert())
+      function showToast(message, type = 'info') {
+        const container = document.getElementById('toastContainer');
+        if (!container) return;
+
+        const colorMap = {
+          info: 'bg-slate-800 border-sky-500/40 text-slate-100',
+          success: 'bg-slate-900 border-emerald-500/50 text-emerald-200',
+          warning: 'bg-slate-900 border-amber-500/50 text-amber-200',
+          error: 'bg-slate-900 border-rose-500/50 text-rose-200'
+        };
+
+        const toast = document.createElement('div');
+        toast.className = `pointer-events-auto px-4 py-3 rounded-xl border shadow-xl text-xs sm:text-sm font-medium transition duration-200 ${colorMap[type] || colorMap.info}`;
+        toast.textContent = message;
+        container.appendChild(toast);
+
+        setTimeout(() => {
+          toast.style.opacity = '0';
+          toast.style.transform = 'translateY(8px)';
+          setTimeout(() => toast.remove(), 220);
+        }, 3200);
+      }
+
+      // Formatting Helpers
+      function formatCurrency(num) {
+        return new Intl.NumberFormat('en-US', {
+          style: 'currency',
+          currency: 'USD',
+          maximumFractionDigits: 0
+        }).format(Number(num) || 0);
+      }
+
+      function formatDateTime(ts) {
+        if (!ts) return '—';
+        const d = new Date(Number(ts));
+        if (Number.isNaN(d.getTime())) return '—';
+        return d.toLocaleString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          hour: 'numeric',
+          minute: '2-digit'
+        });
+      }
+
+      function formatShortDate(ts) {
+        if (!ts) return '—';
+        const d = new Date(Number(ts));
+        if (Number.isNaN(d.getTime())) return '—';
+        return d.toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric'
+        });
+      }
+
+      function escapeHtml(str) {
+        return String(str || '')
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      }
+
+      function getPixelUrl(contractorId) {
+        return `https://track.your-vdc-domain.example/api/open?cid=${encodeURIComponent(contractorId)}&t=1x1.gif`;
+      }
+
+      // Follow-Up Logic: Sent 4+ days ago, no reply, no call scheduled, no follow-up sent yet
+      function isFollowUpDue(c) {
+        if (!c.sentAt) return false;
+        if (c.followUpSentAt) return false;
+        if (c.repliedAt || c.callScheduledAt) return false;
+        if (['Replied', 'Call Scheduled', 'Bid Sent', 'Won', 'Lost'].includes(c.stage)) return false;
+        const dueAt = c.followUpDueAt || (c.sentAt + FOUR_DAYS_MS);
+        return Date.now() >= dueAt;
+      }
+
+      function addLog(contractor, type, text, at = Date.now()) {
+        if (!Array.isArray(contractor.logs)) contractor.logs = [];
+        contractor.logs.push({ type, text, at });
+      }
+
+      // Core Outreach & Simulation Actions
+      function sendInitialEmail(id) {
+        const c = state.contractors.find((item) => item.id === id);
+        if (!c) return;
+
+        const now = Date.now();
+        c.sentAt = c.sentAt || now;
+        c.followUpDueAt = now + FOUR_DAYS_MS;
+        if (c.stage === 'New') {
+          c.stage = 'Sent';
+        }
+        addLog(c, 'sent', `Initial email sent (${c.initialSubject || 'Outreach'}). 4-day follow-up scheduled for ${formatShortDate(c.followUpDueAt)}.`, now);
+        saveState();
+        renderAll();
+        showToast(`Sent initial email to ${c.companyName}. 4-day follow-up queued.`, 'success');
+      }
+
+      function simulateOpen(id) {
+        const c = state.contractors.find((item) => item.id === id);
+        if (!c) return;
+
+        const now = Date.now();
+        if (!c.sentAt) {
+          c.sentAt = now - 2 * 60 * 60 * 1000;
+          c.followUpDueAt = c.sentAt + FOUR_DAYS_MS;
+        }
+        c.openCount = (Number(c.openCount) || 0) + 1;
+        c.lastOpenedAt = now;
+
+        // Advance Sent -> Opened if earlier in funnel
+        if (c.stage === 'New' || c.stage === 'Sent') {
+          c.stage = 'Opened';
+        }
+        addLog(c, 'opened', `Email opened (Open #${c.openCount} via tracking pixel).`, now);
+        saveState();
+        renderAll();
+        showToast(`${c.companyName} opened email (#${c.openCount}).`, 'info');
+      }
+
+      function sendFollowUpEmail(id) {
+        const c = state.contractors.find((item) => item.id === id);
+        if (!c) return;
+
+        const now = Date.now();
+        c.followUpSentAt = now;
+        addLog(c, 'followup', `4-Day Follow-Up sent: "${c.followUpSubject || 'Checking in'}"`, now);
+        saveState();
+        renderAll();
+        showToast(`4-day follow-up sent to ${c.estimatorName} (${c.companyName}).`, 'success');
+      }
+
+      function updateStage(id, newStage) {
+        const c = state.contractors.find((item) => item.id === id);
+        if (!c || !STAGES.includes(newStage)) return;
+
+        const prevStage = c.stage;
+        c.stage = newStage;
+        const now = Date.now();
+        if (newStage !== 'New' && !c.sentAt) {
+          c.sentAt = now;
+          c.followUpDueAt = now + FOUR_DAYS_MS;
+        }
+        addLog(c, 'stage', `Stage changed: ${prevStage} → ${newStage}.`, now);
+        saveState();
+        renderAll();
+        showToast(`${c.companyName} moved to ${newStage}.`, 'info');
+      }
+
+      function deleteContractor(id) {
+        const c = state.contractors.find((item) => item.id === id);
+        if (!c) return;
+        state.contractors = state.contractors.filter((item) => item.id !== id);
+        if (state.activeDrawerId === id) {
+          closeModal('detailDrawer');
+        }
+        saveState();
+        renderAll();
+        showToast(`Removed ${c.companyName} from pipeline.`, 'warning');
+      }
+
+      // KPI Calculations
+      function renderKPIs() {
+        const list = state.contractors;
+        const total = list.length;
+        const newCount = list.filter((c) => c.stage === 'New').length;
+        const sentList = list.filter((c) => Boolean(c.sentAt) || c.stage !== 'New');
+        const emailsSent = sentList.length;
+        const followUpsSent = list.filter((c) => Boolean(c.followUpSentAt)).length;
+
+        const openedList = list.filter((c) => (Number(c.openCount) || 0) > 0 || ['Opened', 'Replied', 'Call Scheduled', 'Bid Sent', 'Won'].includes(c.stage));
+        const openedCount = openedList.length;
+        const totalOpens = list.reduce((sum, c) => sum + (Number(c.openCount) || 0), 0);
+        const openRate = emailsSent > 0 ? Math.round((openedCount / emailsSent) * 100) : 0;
+
+        const respondedList = list.filter((c) => Boolean(c.repliedAt) || ['Replied', 'Call Scheduled', 'Bid Sent', 'Won'].includes(c.stage));
+        const respondedCount = respondedList.length;
+        const replyRate = emailsSent > 0 ? Math.round((respondedCount / emailsSent) * 100) : 0;
+
+        const callsCount = list.filter((c) => Boolean(c.callScheduledAt) || c.stage === 'Call Scheduled').length;
+        const bidsSentCount = list.filter((c) => c.stage === 'Bid Sent').length;
+
+        const wonValue = list
+          .filter((c) => c.stage === 'Won')
+          .reduce((sum, c) => sum + (Number(c.dealValue) || 0), 0);
+
+        const activePipelineValue = list
+          .filter((c) => !['Lost'].includes(c.stage))
+          .reduce((sum, c) => sum + (Number(c.dealValue) || 0), 0);
+
+        document.getElementById('kpiTotalCompanies').textContent = total;
+        document.getElementById('kpiNewCount').textContent = `${newCount} uncontacted`;
+        document.getElementById('kpiEmailsSent').textContent = emailsSent;
+        document.getElementById('kpiFollowUpsSent').textContent = `${followUpsSent} follow-ups sent`;
+        document.getElementById('kpiOpened').textContent = openedCount;
+        document.getElementById('kpiOpenRate').textContent = `${openRate}%`;
+        document.getElementById('kpiTotalOpens').textContent = `${totalOpens} total pixel opens`;
+        document.getElementById('kpiResponded').textContent = respondedCount;
+        document.getElementById('kpiReplyRate').textContent = `${replyRate}%`;
+        document.getElementById('kpiCallsScheduled').textContent = callsCount;
+        document.getElementById('kpiBidsSent').textContent = `${bidsSentCount} bids in play`;
+        document.getElementById('kpiPipelineValue').textContent = formatCurrency(activePipelineValue);
+        document.getElementById('kpiWonValue').textContent = `${formatCurrency(wonValue)} won`;
+      }
+
+      // Render 4-Day Follow-Up Queue
+      function renderFollowUpQueue() {
+        const dueList = state.contractors.filter(isFollowUpDue);
+        const badge = document.getElementById('followUpDueBadge');
+        const container = document.getElementById('followUpQueueList');
+
+        badge.textContent = `${dueList.length} Due / Overdue`;
+
+        if (dueList.length === 0) {
+          container.innerHTML = `
+            <div class="md:col-span-2 xl:col-span-3 bg-slate-900/70 border border-slate-800 rounded-xl p-3.5 text-xs text-slate-400 flex items-center justify-between gap-2">
+              <span>No 4-day follow-ups are overdue right now. Contacts who reply or book a call are automatically excluded.</span>
+            </div>
+          `;
+          return;
+        }
+
+        container.innerHTML = dueList.map((c) => {
+          const daysAgo = Math.max(4, Math.floor((Date.now() - c.sentAt) / (24 * 60 * 60 * 1000)));
+          return `
+            <div class="bg-slate-900/95 border border-amber-500/30 rounded-xl p-3.5 flex flex-col justify-between gap-3">
+              <div>
+                <div class="flex items-start justify-between gap-2">
+                  <div class="min-w-0">
+                    <div class="font-semibold text-sm text-white truncate">${escapeHtml(c.companyName)}</div>
+                    <div class="text-xs text-slate-400 truncate">${escapeHtml(c.estimatorName)} • ${escapeHtml(c.region)}</div>
+                  </div>
+                  <span class="px-2 py-0.5 text-[11px] font-semibold rounded-md bg-amber-500/20 text-amber-200 shrink-0 tabular-nums">
+                    ${daysAgo}d since sent
+                  </span>
+                </div>
+                <div class="mt-2 text-xs text-slate-300 bg-slate-950/80 border border-slate-800 rounded-lg p-2 line-clamp-2">
+                  <span class="text-amber-300 font-medium">Follow-Up:</span> ${escapeHtml(c.followUpSubject)}
+                </div>
+              </div>
+
+              <div class="flex items-center justify-between gap-2 pt-1">
+                <button
+                  type="button"
+                  onclick="window.__vdcApp.openDrawer('${c.id}')"
+                  class="px-2.5 py-1.5 text-xs font-medium rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 cursor-pointer"
+                >
+                  Edit / View
+                </button>
+                <button
+                  type="button"
+                  onclick="window.__vdcApp.sendFollowUpEmail('${c.id}')"
+                  class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 transition cursor-pointer"
+                >
+                  Send 4-Day Follow-Up
+                </button>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      // Filtering & Sorting Pipeline
+      function getFilteredSortedContractors() {
+        const { search, stage, region, sort } = state.filters;
+        const q = search.trim().toLowerCase();
+
+        const filtered = state.contractors.filter((c) => {
+          if (stage !== 'All' && c.stage !== stage) return false;
+          if (region !== 'All' && c.region !== region) return false;
+          if (q) {
+            const hay = `${c.companyName} ${c.estimatorName} ${c.email} ${c.region}`.toLowerCase();
+            if (!hay.includes(q)) return false;
+          }
+          return true;
+        });
+
+        filtered.sort((a, b) => {
+          if (sort === 'deal_value') {
+            return (Number(b.dealValue) || 0) - (Number(a.dealValue) || 0);
+          }
+          if (sort === 'last_opened') {
+            return (Number(b.lastOpenedAt) || 0) - (Number(a.lastOpenedAt) || 0);
+          }
+          if (sort === 'follow_up_due') {
+            const aDue = a.followUpDueAt ? Number(a.followUpDueAt) : Number.MAX_SAFE_INTEGER;
+            const bDue = b.followUpDueAt ? Number(b.followUpDueAt) : Number.MAX_SAFE_INTEGER;
+            return aDue - bDue;
+          }
+          // Default: stage_priority
+          const pDiff = (STAGE_PRIORITY[b.stage] || 0) - (STAGE_PRIORITY[a.stage] || 0);
+          if (pDiff !== 0) return pDiff;
+          return (Number(b.dealValue) || 0) - (Number(a.dealValue) || 0);
+        });
+
+        return filtered;
+      }
+
+      function renderStageOptions(selectedStage) {
+        return STAGES.map((st) => `<option value="${st}" ${st === selectedStage ? 'selected' : ''}>${st}</option>`).join('');
+      }
+
+      function renderTrackingSummary(c) {
+        const openedFlag = (Number(c.openCount) || 0) > 0 || ['Opened', 'Replied', 'Call Scheduled', 'Bid Sent', 'Won'].includes(c.stage);
+        const repliedFlag = Boolean(c.repliedAt) || ['Replied', 'Call Scheduled', 'Bid Sent', 'Won'].includes(c.stage);
+        const callFlag = Boolean(c.callScheduledAt) || c.stage === 'Call Scheduled';
+
+        const pill = (active, label, activeClasses) =>
+          active
+            ? `<span class="px-2 py-0.5 text-[11px] font-semibold rounded-md border ${activeClasses}">${label}</span>`
+            : `<span class="px-2 py-0.5 text-[11px] font-medium rounded-md border bg-slate-950 text-slate-500 border-slate-800">${label}: No</span>`;
+
+        const openText = (Number(c.openCount) || 0) > 0 ? `Opened ${c.openCount}x` : 'Opened: No';
+        const replyText = repliedFlag ? 'Responded: Yes' : 'Responded: No';
+        const callText = callFlag ? `Call: ${formatShortDate(c.callScheduledAt)}` : 'Call: No';
+
+        const metaBits = [];
+        if (c.sentAt) metaBits.push(`Sent ${formatShortDate(c.sentAt)}`);
+        if (c.lastOpenedAt) metaBits.push(`Last open ${formatShortDate(c.lastOpenedAt)}`);
+        if (isFollowUpDue(c)) metaBits.push('4-day bump due');
+
+        return `
+          <div class="space-y-1.5">
+            <div class="flex items-center gap-1.5 flex-wrap">
+              ${pill(openedFlag, openText, 'bg-indigo-500/15 text-indigo-300 border-indigo-500/35 tabular-nums')}
+              ${pill(repliedFlag, replyText, 'bg-emerald-500/15 text-emerald-300 border-emerald-500/35')}
+              ${pill(callFlag, callText, 'bg-amber-500/15 text-amber-300 border-amber-500/35 tabular-nums')}
+            </div>
+            <div class="text-[11px] text-slate-400 tabular-nums">${metaBits.length ? escapeHtml(metaBits.join(' • ')) : 'Not contacted yet'}</div>
+          </div>
+        `;
+      }
+
+      function renderContractorRowHtml(c) {
+        const badgeClass = STAGE_BADGE_CLASSES[c.stage] || STAGE_BADGE_CLASSES['New'];
+        const followUpBtn = isFollowUpDue(c)
+          ? `<button type="button" onclick="window.__vdcApp.sendFollowUpEmail('${c.id}')" class="px-2.5 py-1 text-xs font-semibold rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 transition cursor-pointer">Follow-Up</button>`
+          : '';
+
+        const desktopRow = `
+          <tr class="hover:bg-slate-850/70 transition align-top">
+            <td class="py-3 px-4">
+              <button type="button" onclick="window.__vdcApp.openDrawer('${c.id}')" class="font-semibold text-white hover:text-sky-300 text-left transition cursor-pointer">
+                ${escapeHtml(c.companyName)}
+              </button>
+              <div class="mt-0.5 flex items-center gap-2 text-xs text-slate-400">
+                <span class="px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700/80">${escapeHtml(c.region)}</span>
+              </div>
+            </td>
+
+            <td class="py-3 px-3">
+              <div class="font-medium text-slate-200">${escapeHtml(c.estimatorName)}</div>
+              <div class="text-xs text-slate-400 truncate max-w-[200px]" title="${escapeHtml(c.email)}">${escapeHtml(c.email)}</div>
+            </td>
+
+            <td class="py-3 px-3">
+              <select
+                aria-label="Stage for ${escapeHtml(c.companyName)}"
+                onchange="window.__vdcApp.updateStage('${c.id}', this.value)"
+                class="px-2.5 py-1 text-xs font-semibold rounded-lg border outline-none cursor-pointer ${badgeClass}"
+              >
+                ${renderStageOptions(c.stage)}
+              </select>
+            </td>
+
+            <td class="py-3 px-3">
+              ${renderTrackingSummary(c)}
+            </td>
+
+            <td class="py-3 px-3 text-right font-semibold text-white tabular-nums whitespace-nowrap">
+              ${formatCurrency(c.dealValue)}
+            </td>
+
+            <td class="py-3 px-4 text-right">
+              <div class="inline-flex items-center justify-end gap-1.5 flex-wrap max-w-[300px]">
+                <button
+                  type="button"
+                  onclick="window.__vdcApp.sendInitialEmail('${c.id}')"
+                  class="px-2.5 py-1 text-xs font-semibold rounded-lg bg-sky-500/20 hover:bg-sky-500/30 text-sky-300 border border-sky-500/40 transition cursor-pointer"
+                >
+                  Send Email
+                </button>
+                <button
+                  type="button"
+                  onclick="window.__vdcApp.simulateOpen('${c.id}')"
+                  class="px-2.5 py-1 text-xs font-medium rounded-lg bg-indigo-500/15 hover:bg-indigo-500/25 text-indigo-300 border border-indigo-500/35 transition cursor-pointer"
+                >
+                  Sim Open
+                </button>
+                <button
+                  type="button"
+                  onclick="window.__vdcApp.openReplyModal('${c.id}')"
+                  class="px-2.5 py-1 text-xs font-medium rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/35 transition cursor-pointer"
+                >
+                  Reply
+                </button>
+                <button
+                  type="button"
+                  onclick="window.__vdcApp.openScheduleModal('${c.id}')"
+                  class="px-2.5 py-1 text-xs font-medium rounded-lg bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/35 transition cursor-pointer"
+                >
+                  Call
+                </button>
+                ${followUpBtn}
+                <button
+                  type="button"
+                  onclick="window.__vdcApp.openDrawer('${c.id}')"
+                  class="px-2.5 py-1 text-xs font-medium rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition cursor-pointer"
+                >
+                  Log
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+
+        const mobileCard = `
+          <div class="bg-slate-950/75 border border-slate-800 rounded-xl p-3.5 space-y-3">
+            <div class="flex items-start justify-between gap-2">
+              <div>
+                <button type="button" onclick="window.__vdcApp.openDrawer('${c.id}')" class="font-bold text-sm text-white hover:text-sky-300 text-left cursor-pointer">
+                  ${escapeHtml(c.companyName)}
+                </button>
+                <div class="text-xs text-slate-400">${escapeHtml(c.estimatorName)} • ${escapeHtml(c.region)}</div>
+                <div class="text-xs text-slate-500 break-all">${escapeHtml(c.email)}</div>
+              </div>
+              <div class="text-right shrink-0">
+                <div class="font-bold text-sm text-white tabular-nums">${formatCurrency(c.dealValue)}</div>
+                <select
+                  aria-label="Stage for ${escapeHtml(c.companyName)}"
+                  onchange="window.__vdcApp.updateStage('${c.id}', this.value)"
+                  class="mt-1 px-2 py-1 text-xs font-semibold rounded-lg border outline-none cursor-pointer ${badgeClass}"
+                >
+                  ${renderStageOptions(c.stage)}
+                </select>
+              </div>
+            </div>
+
+            <div class="bg-slate-900/90 border border-slate-800/80 rounded-lg p-2.5">
+              ${renderTrackingSummary(c)}
+            </div>
+
+            <div class="flex items-center gap-2 flex-wrap">
+              <button type="button" onclick="window.__vdcApp.sendInitialEmail('${c.id}')" class="px-3 py-1.5 text-xs font-semibold rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 transition cursor-pointer">
+                Send Email
+              </button>
+              <button type="button" onclick="window.__vdcApp.simulateOpen('${c.id}')" class="px-3 py-1.5 text-xs font-medium rounded-xl bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 cursor-pointer">
+                Sim Open
+              </button>
+              <button type="button" onclick="window.__vdcApp.openReplyModal('${c.id}')" class="px-3 py-1.5 text-xs font-medium rounded-xl bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 cursor-pointer">
+                Log Reply
+              </button>
+              <button type="button" onclick="window.__vdcApp.openScheduleModal('${c.id}')" class="px-3 py-1.5 text-xs font-medium rounded-xl bg-amber-500/20 text-amber-300 border border-amber-500/40 cursor-pointer">
+                Call
+              </button>
+              ${followUpBtn}
+              <button type="button" onclick="window.__vdcApp.openDrawer('${c.id}')" class="px-3 py-1.5 text-xs font-medium rounded-xl bg-slate-800 text-slate-200 border border-slate-700 cursor-pointer">
+                Activity &amp; Templates
+              </button>
+            </div>
+          </div>
+        `;
+
+        return { desktopRow, mobileCard };
+      }
+
+      // Render Categorized Pipeline Sections
+      function renderPipeline() {
+        const rows = getFilteredSortedContractors();
+        const groupsContainer = document.getElementById('categoryGroupsList');
+        const emptyState = document.getElementById('emptyState');
+        const countLabel = document.getElementById('visibleCountLabel');
+
+        countLabel.textContent = `${rows.length} of ${state.contractors.length} contractors shown across ${CATEGORY_GROUPS.length} categories`;
+
+        if (rows.length === 0) {
+          groupsContainer.innerHTML = '';
+          emptyState.classList.remove('hidden');
+          return;
+        }
+
+        emptyState.classList.add('hidden');
+
+        groupsContainer.innerHTML = CATEGORY_GROUPS.map((group) => {
+          const groupItems = rows.filter((c) => group.match(c));
+          const groupTotal = groupItems.reduce((sum, c) => sum + (Number(c.dealValue) || 0), 0);
+          const isCollapsed = Boolean(state.collapsedGroups[group.id]);
+
+          const renderedItems = groupItems.map(renderContractorRowHtml);
+          const desktopRowsHtml = renderedItems.map((x) => x.desktopRow).join('');
+          const mobileCardsHtml = renderedItems.map((x) => x.mobileCard).join('');
+
+          const bodyContent = isCollapsed
+            ? ''
+            : groupItems.length === 0
+              ? `<div class="px-5 py-4 text-xs text-slate-400 border-t border-slate-800/80">No matching contractors in this category right now.</div>`
+              : `
+                <div class="hidden lg:block overflow-x-auto border-t border-slate-800/80">
+                  <table class="w-full text-left border-collapse">
+                    <thead>
+                      <tr class="bg-slate-925/80 border-b border-slate-800 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+                        <th class="py-2.5 px-4">Contractor &amp; Region</th>
+                        <th class="py-2.5 px-3">Estimator &amp; Email</th>
+                        <th class="py-2.5 px-3">Stage</th>
+                        <th class="py-2.5 px-3">Instant Status (Open / Reply / Call)</th>
+                        <th class="py-2.5 px-3 text-right">Est. Value</th>
+                        <th class="py-2.5 px-4 text-right">Quick Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/80 text-sm">${desktopRowsHtml}</tbody>
+                  </table>
+                </div>
+                <div class="lg:hidden divide-y divide-slate-800 p-3 space-y-3 border-t border-slate-800/80">${mobileCardsHtml}</div>
+              `;
+
+          return `
+            <div class="border ${group.accentClass} rounded-2xl overflow-hidden shadow-sm">
+              <button
+                type="button"
+                onclick="window.__vdcApp.toggleGroupCollapse('${group.id}')"
+                aria-expanded="${!isCollapsed}"
+                class="w-full px-4 sm:px-5 py-3.5 flex items-center justify-between gap-3 text-left hover:bg-white/[0.02] transition cursor-pointer"
+              >
+                <div class="min-w-0 flex items-center gap-3">
+                  <svg
+                    class="w-4 h-4 text-slate-400 shrink-0 transition-transform duration-150 ${isCollapsed ? '-rotate-90' : ''}"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.2"
+                    viewBox="0 0 24 24"
+                  >
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                  </svg>
+                  <div class="min-w-0">
+                    <div class="flex items-center gap-2 flex-wrap">
+                      <h2 class="text-sm sm:text-base font-bold text-white truncate">${escapeHtml(group.title)}</h2>
+                      <span class="px-2 py-0.5 text-xs font-bold rounded-full border tabular-nums ${group.badgeClass}">
+                        ${groupItems.length}
+                      </span>
+                      <span class="text-xs font-semibold text-slate-300 tabular-nums">
+                        ${formatCurrency(groupTotal)}
+                      </span>
+                    </div>
+                    <p class="text-xs text-slate-400 truncate mt-0.5">${escapeHtml(group.subtitle)}</p>
+                  </div>
+                </div>
+                <span class="text-xs font-medium text-slate-400 shrink-0 hidden sm:inline">
+                  ${isCollapsed ? 'Expand' : 'Collapse'}
+                </span>
+              </button>
+              ${bodyContent}
+            </div>
+          `;
+        }).join('');
+      }
+
+      // Detail Drawer Rendering (Templates, Notes, Pixel URL, Activity Log)
+      function openDrawer(id) {
+        state.activeDrawerId = id;
+        renderDrawer();
+        const drawer = document.getElementById('detailDrawer');
+        drawer.classList.remove('hidden');
+        drawer.classList.add('flex');
+      }
+
+      function renderDrawer() {
+        const c = state.contractors.find((item) => item.id === state.activeDrawerId);
+        const container = document.getElementById('detailDrawerContent');
+        if (!c || !container) return;
+
+        const logsSorted = [...(c.logs || [])].sort((a, b) => (Number(b.at) || 0) - (Number(a.at) || 0));
+
+        container.innerHTML = `
+          <div>
+            <div class="flex items-start justify-between gap-3 pb-4 border-b border-slate-800">
+              <div>
+                <div class="flex items-center gap-2 flex-wrap">
+                  <h2 class="text-xl font-bold text-white">${escapeHtml(c.companyName)}</h2>
+                  <span class="px-2.5 py-0.5 text-xs font-semibold rounded-full border ${STAGE_BADGE_CLASSES[c.stage] || STAGE_BADGE_CLASSES['New']}">
+                    ${escapeHtml(c.stage)}
+                  </span>
+                </div>
+                <p class="text-xs text-slate-400 mt-1">
+                  ${escapeHtml(c.estimatorName)} • <span class="text-slate-300">${escapeHtml(c.email)}</span> • ${escapeHtml(c.region)}
+                </p>
+              </div>
+              <button type="button" onclick="window.__vdcApp.closeModal('detailDrawer')" class="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 cursor-pointer">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <!-- Quick Stage & Deal Value Controls -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
+              <div class="bg-slate-950 border border-slate-800 rounded-xl p-3">
+                <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1">Pipeline Stage</label>
+                <select
+                  onchange="window.__vdcApp.updateStage('${c.id}', this.value)"
+                  class="w-full px-3 py-2 text-sm bg-slate-900 border border-slate-700 rounded-xl text-white outline-none cursor-pointer"
+                >
+                  ${renderStageOptions(c.stage)}
+                </select>
+              </div>
+              <div class="bg-slate-950 border border-slate-800 rounded-xl p-3">
+                <label for="drawerDealValue" class="block text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1">Estimated Deal Value ($)</label>
+                <input
+                  id="drawerDealValue"
+                  type="number"
+                  step="250"
+                  value="${Number(c.dealValue) || 0}"
+                  onchange="window.__vdcApp.updateDealValue('${c.id}', this.value)"
+                  class="w-full px-3 py-2 text-sm bg-slate-900 border border-slate-700 rounded-xl text-white outline-none tabular-nums"
+                />
+              </div>
+            </div>
+
+            <!-- Tracking Pixel Preview -->
+            <div class="mt-4 bg-slate-950 border border-slate-800 rounded-xl p-3.5 space-y-1.5">
+              <div class="flex items-center justify-between gap-2">
+                <span class="text-[11px] font-semibold uppercase tracking-wider text-indigo-300">1x1 Tracking Pixel Endpoint Preview</span>
+                <span class="text-xs text-slate-400 tabular-nums">${Number(c.openCount) || 0} opens</span>
+              </div>
+              <code class="block text-xs text-slate-300 bg-slate-900 border border-slate-800 rounded-lg p-2 break-all">${escapeHtml(getPixelUrl(c.id))}</code>
+            </div>
+
+            <!-- Editable Notes & Outreach Templates -->
+            <div class="mt-4 bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-3">
+              <div class="text-xs font-bold uppercase tracking-wider text-sky-400">Scope Notes &amp; Email Templates</div>
+
+              <div>
+                <label for="drawerNotes" class="block text-xs font-medium text-slate-300 mb-1">Notes</label>
+                <textarea id="drawerNotes" rows="2" class="w-full px-3 py-2 text-xs bg-slate-900 border border-slate-700 rounded-xl text-white outline-none">${escapeHtml(c.notes || '')}</textarea>
+              </div>
+
+              <div>
+                <label for="drawerInitialSubject" class="block text-xs font-medium text-slate-300 mb-1">Initial Email Subject</label>
+                <input id="drawerInitialSubject" type="text" value="${escapeHtml(c.initialSubject || '')}" class="w-full px-3 py-2 text-xs bg-slate-900 border border-slate-700 rounded-xl text-white outline-none" />
+              </div>
+
+              <div>
+                <label for="drawerInitialBody" class="block text-xs font-medium text-slate-300 mb-1">Initial Email Body</label>
+                <textarea id="drawerInitialBody" rows="4" class="w-full px-3 py-2 text-xs bg-slate-900 border border-slate-700 rounded-xl text-white outline-none leading-relaxed">${escapeHtml(c.initialBody || '')}</textarea>
+              </div>
+
+              <div>
+                <label for="drawerFollowUpSubject" class="block text-xs font-medium text-slate-300 mb-1">4-Day Follow-Up Subject</label>
+                <input id="drawerFollowUpSubject" type="text" value="${escapeHtml(c.followUpSubject || '')}" class="w-full px-3 py-2 text-xs bg-slate-900 border border-slate-700 rounded-xl text-white outline-none" />
+              </div>
+
+              <div>
+                <label for="drawerFollowUpBody" class="block text-xs font-medium text-slate-300 mb-1">4-Day Follow-Up Body</label>
+                <textarea id="drawerFollowUpBody" rows="3" class="w-full px-3 py-2 text-xs bg-slate-900 border border-slate-700 rounded-xl text-white outline-none leading-relaxed">${escapeHtml(c.followUpBody || '')}</textarea>
+              </div>
+
+              <div class="flex justify-end">
+                <button
+                  type="button"
+                  onclick="window.__vdcApp.saveDrawerTemplates('${c.id}')"
+                  class="px-3.5 py-2 text-xs font-semibold rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 transition cursor-pointer"
+                >
+                  Save Notes &amp; Templates
+                </button>
+              </div>
+            </div>
+
+            <!-- Chronological Activity Log -->
+            <div class="mt-5 space-y-2.5">
+              <div class="flex items-center justify-between">
+                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300">Activity Log</h3>
+                <span class="text-xs text-slate-500 tabular-nums">${logsSorted.length} events</span>
+              </div>
+              <div class="space-y-2 max-h-64 overflow-y-auto pr-1">
+                ${logsSorted.map((ev) => `
+                  <div class="bg-slate-950 border border-slate-800/90 rounded-xl p-3 text-xs">
+                    <div class="flex items-center justify-between gap-2 text-slate-400 mb-1">
+                      <span class="uppercase font-semibold text-[10px] tracking-wider text-sky-300">${escapeHtml(ev.type)}</span>
+                      <span class="tabular-nums">${formatDateTime(ev.at)}</span>
+                    </div>
+                    <div class="text-slate-200 leading-relaxed">${escapeHtml(ev.text)}</div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          </div>
+
+          <div class="pt-4 border-t border-slate-800 flex items-center justify-between gap-2">
+            <button
+              type="button"
+              onclick="window.__vdcApp.deleteContractor('${c.id}')"
+              class="px-3 py-2 text-xs font-semibold rounded-xl bg-rose-950/50 hover:bg-rose-900/60 text-rose-300 border border-rose-500/30 transition cursor-pointer"
+            >
+              Delete Contractor
+            </button>
+            <button
+              type="button"
+              onclick="window.__vdcApp.closeModal('detailDrawer')"
+              class="px-4 py-2 text-xs font-semibold rounded-xl bg-slate-800 hover:bg-slate-700 text-white cursor-pointer"
+            >
+              Close
+            </button>
+          </div>
+        `;
+      }
+
+      function updateDealValue(id, val) {
+        const c = state.contractors.find((item) => item.id === id);
+        if (!c) return;
+        const parsed = Math.max(0, Number(val) || 0);
+        c.dealValue = parsed;
+        addLog(c, 'note', `Estimated deal value updated to ${formatCurrency(parsed)}.`);
+        saveState();
+        renderKPIs();
+        renderPipeline();
+        showToast(`Updated deal value for ${c.companyName} to ${formatCurrency(parsed)}.`, 'info');
+      }
+
+      function saveDrawerTemplates(id) {
+        const c = state.contractors.find((item) => item.id === id);
+        if (!c) return;
+        c.notes = document.getElementById('drawerNotes')?.value || '';
+        c.initialSubject = document.getElementById('drawerInitialSubject')?.value || '';
+        c.initialBody = document.getElementById('drawerInitialBody')?.value || '';
+        c.followUpSubject = document.getElementById('drawerFollowUpSubject')?.value || '';
+        c.followUpBody = document.getElementById('drawerFollowUpBody')?.value || '';
+        addLog(c, 'note', 'Updated notes and email templates.');
+        saveState();
+        renderDrawer();
+        showToast(`Saved templates & notes for ${c.companyName}.`, 'success');
+      }
+
+      // Modal Open / Close Helpers
+      function openModal(modalId) {
+        const el = document.getElementById(modalId);
+        if (!el) return;
+        el.classList.remove('hidden');
+        el.classList.add('flex');
+      }
+
+      function closeModal(modalId) {
+        const el = document.getElementById(modalId);
+        if (!el) return;
+        el.classList.add('hidden');
+        el.classList.remove('flex');
+        if (modalId === 'detailDrawer') state.activeDrawerId = null;
+        if (modalId === 'replyModal') state.activeReplyId = null;
+        if (modalId === 'scheduleCallModal') state.activeScheduleId = null;
+      }
+
+      function openReplyModal(id) {
+        const c = state.contractors.find((item) => item.id === id);
+        if (!c) return;
+        state.activeReplyId = id;
+        document.getElementById('replyModalSubtitle').textContent = `${c.companyName} • ${c.estimatorName} (${c.email})`;
+        document.getElementById('replyTextInput').value = '';
+        openModal('replyModal');
+      }
+
+      function openScheduleModal(id) {
+        const c = state.contractors.find((item) => item.id === id);
+        if (!c) return;
+        state.activeScheduleId = id;
+        document.getElementById('scheduleModalSubtitle').textContent = `${c.companyName} • ${c.estimatorName}`;
+
+        // Default to tomorrow at 10:00 AM local time
+        const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000);
+        tomorrow.setHours(10, 0, 0, 0);
+        const pad = (n) => String(n).padStart(2, '0');
+        const localIso = `${tomorrow.getFullYear()}-${pad(tomorrow.getMonth() + 1)}-${pad(tomorrow.getDate())}T${pad(tomorrow.getHours())}:${pad(tomorrow.getMinutes())}`;
+        document.getElementById('callDateTimeInput').value = c.callScheduledAt
+          ? (() => {
+              const d = new Date(Number(c.callScheduledAt));
+              return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+            })()
+          : localIso;
+        document.getElementById('callTopicInput').value = 'Scope review: LOD 350 feeder/gear coordination, duct banks & Trimble CSV';
+        openModal('scheduleCallModal');
+      }
+
+      // Bind Event Listeners
+      function bindEvents() {
+        // Filter & Sort Controls
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+          state.filters.search = e.target.value;
+          renderPipeline();
+        });
+
+        document.getElementById('stageFilter').addEventListener('change', (e) => {
+          state.filters.stage = e.target.value;
+          renderPipeline();
+        });
+
+        document.getElementById('regionFilter').addEventListener('change', (e) => {
+          state.filters.region = e.target.value;
+          renderPipeline();
+        });
+
+        // Sort & Group Controls
+        document.getElementById('sortSelect').addEventListener('change', (e) => {
+          state.filters.sort = e.target.value;
+          renderPipeline();
+        });
+
+        document.getElementById('expandAllGroupsBtn').addEventListener('click', () => {
+          setAllGroupsCollapsed(false);
+        });
+
+        document.getElementById('collapseAllGroupsBtn').addEventListener('click', () => {
+          setAllGroupsCollapsed(true);
+        });
+
+        // Open Add Contractor Modal + Pre-fill Templates
+        document.getElementById('openAddModalBtn').addEventListener('click', () => {
+          const tpl = getDefaultTemplates('[Company Name]', '[Estimator Name]', 'Beloit/Janesville');
+          document.getElementById('newCompanyName').value = '';
+          document.getElementById('newEstimatorName').value = '';
+          document.getElementById('newEmail').value = '';
+          document.getElementById('newRegion').value = 'Beloit/Janesville';
+          document.getElementById('newDealValue').value = '16500';
+          document.getElementById('newNotes').value = '';
+          document.getElementById('newInitialSubject').value = tpl.initialSubject;
+          document.getElementById('newInitialBody').value = tpl.initialBody;
+          document.getElementById('newFollowUpSubject').value = tpl.followUpSubject;
+          document.getElementById('newFollowUpBody').value = tpl.followUpBody;
+          openModal('addContractorModal');
+        });
+
+        // Auto-refresh default templates when typing company/estimator/region if not manually customized
+        ['newCompanyName', 'newEstimatorName', 'newRegion'].forEach((fieldId) => {
+          document.getElementById(fieldId).addEventListener('input', () => {
+            const comp = document.getElementById('newCompanyName').value.trim() || '[Company Name]';
+            const est = document.getElementById('newEstimatorName').value.trim() || '[Estimator Name]';
+            const reg = document.getElementById('newRegion').value;
+            const tpl = getDefaultTemplates(comp, est, reg);
+            document.getElementById('newInitialSubject').value = tpl.initialSubject;
+            document.getElementById('newInitialBody').value = tpl.initialBody;
+            document.getElementById('newFollowUpSubject').value = tpl.followUpSubject;
+            document.getElementById('newFollowUpBody').value = tpl.followUpBody;
+          });
+        });
+
+        // Add Contractor Form Submit
+        document.getElementById('addContractorForm').addEventListener('submit', (e) => {
+          e.preventDefault();
+          const companyName = document.getElementById('newCompanyName').value.trim();
+          const region = document.getElementById('newRegion').value;
+          const estimatorName = document.getElementById('newEstimatorName').value.trim();
+          const email = document.getElementById('newEmail').value.trim();
+          const dealValue = Math.max(0, Number(document.getElementById('newDealValue').value) || 0);
+          const notes = document.getElementById('newNotes').value.trim();
+          const initialSubject = document.getElementById('newInitialSubject').value.trim();
+          const initialBody = document.getElementById('newInitialBody').value;
+          const followUpSubject = document.getElementById('newFollowUpSubject').value.trim();
+          const followUpBody = document.getElementById('newFollowUpBody').value;
+
+          if (!companyName || !estimatorName || !email) {
+            showToast('Please fill out company name, estimator name, and email.', 'error');
+            return;
+          }
+
+          const now = Date.now();
+          const newRecord = {
+            id: `cmp_${now}_${Math.random().toString(36).slice(2, 6)}`,
+            companyName,
+            region,
+            estimatorName,
+            email,
+            dealValue,
+            stage: 'New',
+            createdAt: now,
+            sentAt: null,
+            followUpDueAt: null,
+            followUpSentAt: null,
+            openCount: 0,
+            lastOpenedAt: null,
+            repliedAt: null,
+            callScheduledAt: null,
+            notes,
+            initialSubject,
+            initialBody,
+            followUpSubject,
+            followUpBody,
+            logs: [
+              { type: 'created', text: `Contractor added to pipeline (${region}).`, at: now }
+            ]
+          };
+
+          state.contractors.unshift(newRecord);
+          saveState();
+          renderAll();
+          closeModal('addContractorModal');
+          showToast(`Added ${companyName} to pipeline.`, 'success');
+        });
+
+        // Reply Sample Buttons
+        document.querySelectorAll('.sample-reply-btn').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            const rawText = btn.textContent.trim();
+            const unquoted = rawText.replace(/^"|"$/g, '');
+            document.getElementById('replyTextInput').value = unquoted;
+          });
+        });
+
+        // Reply Form Submit
+        document.getElementById('replyForm').addEventListener('submit', (e) => {
+          e.preventDefault();
+          const c = state.contractors.find((item) => item.id === state.activeReplyId);
+          if (!c) return;
+          const replyText = document.getElementById('replyTextInput').value.trim();
+          if (!replyText) return;
+
+          const now = Date.now();
+          c.repliedAt = now;
+          if (!c.sentAt) {
+            c.sentAt = now - 2 * 60 * 60 * 1000;
+          }
+          if (!['Call Scheduled', 'Bid Sent', 'Won'].includes(c.stage)) {
+            c.stage = 'Replied';
+          }
+          addLog(c, 'replied', `Reply logged: "${replyText}"`, now);
+          saveState();
+          renderAll();
+          closeModal('replyModal');
+          showToast(`Reply logged for ${c.companyName}. Follow-up queue updated.`, 'success');
+        });
+
+        // Schedule Call Form Submit
+        document.getElementById('scheduleCallForm').addEventListener('submit', (e) => {
+          e.preventDefault();
+          const c = state.contractors.find((item) => item.id === state.activeScheduleId);
+          if (!c) return;
+          const dtVal = document.getElementById('callDateTimeInput').value;
+          const topicVal = document.getElementById('callTopicInput').value.trim() || 'VDC Scoping Call';
+          const parsedTs = new Date(dtVal).getTime();
+
+          if (Number.isNaN(parsedTs)) {
+            showToast('Please pick a valid date and time.', 'error');
+            return;
+          }
+
+          const now = Date.now();
+          c.callScheduledAt = parsedTs;
+          if (!['Bid Sent', 'Won'].includes(c.stage)) {
+            c.stage = 'Call Scheduled';
+          }
+          addLog(c, 'call', `Call scheduled for ${formatDateTime(parsedTs)} — ${topicVal}.`, now);
+          saveState();
+          renderAll();
+          closeModal('scheduleCallModal');
+          showToast(`Call scheduled with ${c.estimatorName} (${formatDateTime(parsedTs)}).`, 'success');
+        });
+
+        // Simulate +4 Days Elapsed Helper
+        document.getElementById('simulate4DaysElapsedBtn').addEventListener('click', () => {
+          let shifted = 0;
+          state.contractors.forEach((c) => {
+            if (c.sentAt && !c.followUpSentAt && !c.repliedAt && !c.callScheduledAt && ['Sent', 'Opened'].includes(c.stage)) {
+              c.sentAt = Number(c.sentAt) - FOUR_DAYS_MS;
+              c.followUpDueAt = Number(c.sentAt) + FOUR_DAYS_MS;
+              shifted += 1;
+            }
+          });
+          saveState();
+          renderAll();
+          showToast(
+            shifted > 0
+              ? `Simulated +4 days elapsed on ${shifted} active outreach thread(s).`
+              : 'No active Sent/Opened threads eligible for +4 day simulation.',
+            'info'
+          );
+        });
+
+        // JSON Export
+        document.getElementById('exportJsonBtn').addEventListener('click', () => {
+          const payload = JSON.stringify(
+            {
+              exportedAt: new Date().toISOString(),
+              contractors: state.contractors
+            },
+            null,
+            2
+          );
+          const blob = new Blob([payload], { type: 'application/json' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `vdc-outreach-pipeline-${new Date().toISOString().slice(0, 10)}.json`;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          URL.revokeObjectURL(url);
+          showToast('Exported pipeline backup JSON.', 'success');
+        });
+
+        // JSON Import
+        document.getElementById('importJsonInput').addEventListener('change', (e) => {
+          const file = e.target.files && e.target.files[0];
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = (ev) => {
+            try {
+              const parsed = JSON.parse(String(ev.target.result || ''));
+              const importedList = Array.isArray(parsed) ? parsed : parsed.contractors;
+              if (!Array.isArray(importedList)) {
+                throw new Error('Invalid JSON structure');
+              }
+              state.contractors = importedList;
+              saveState();
+              renderAll();
+              showToast(`Imported ${importedList.length} contractor records.`, 'success');
+            } catch (err) {
+              console.error(err);
+              showToast('Could not import JSON file. Check file format.', 'error');
+            } finally {
+              e.target.value = '';
+            }
+          };
+          reader.readAsText(file);
+        });
+
+        // Reset Sample Data
+        document.getElementById('resetSampleBtn').addEventListener('click', () => {
+          state.contractors = createSampleData();
+          saveState();
+          renderAll();
+          showToast('Reset pipeline to fresh commercial electrical sample data.', 'info');
+        });
+
+        // Guide Modal Button
+        document.getElementById('openGuideBtn').addEventListener('click', () => openModal('guideModal'));
+
+        // Modal Close Buttons & Backdrop Clicks
+        document.querySelectorAll('[data-close-modal]').forEach((btn) => {
+          btn.addEventListener('click', () => closeModal(btn.getAttribute('data-close-modal')));
+        });
+
+        ['addContractorModal', 'replyModal', 'scheduleCallModal', 'guideModal', 'detailDrawer'].forEach((modalId) => {
+          const el = document.getElementById(modalId);
+          el.addEventListener('click', (e) => {
+            if (e.target === el) {
+              closeModal(modalId);
+            }
+          });
+        });
+
+        // Escape Key Closes Modals / Drawer
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape') {
+            ['addContractorModal', 'replyModal', 'scheduleCallModal', 'guideModal', 'detailDrawer'].forEach(closeModal);
+          }
+        });
+      }
+
+      function renderAll() {
+        renderKPIs();
+        renderFollowUpQueue();
+        renderPipeline();
+        if (state.activeDrawerId) {
+          renderDrawer();
+        }
+      }
+
+      // Expose clean methods for inline row/drawer event handlers
+      window.__vdcApp = {
+        sendInitialEmail,
+        simulateOpen,
+        sendFollowUpEmail,
+        updateStage,
+        deleteContractor,
+        toggleGroupCollapse,
+        openReplyModal,
+        openScheduleModal,
+        openDrawer,
+        closeModal,
+        updateDealValue,
+        saveDrawerTemplates
+      };
+
+      // Boot
+      window.addEventListener('DOMContentLoaded', () => {
+        loadState();
+        bindEvents();
+        renderAll();
+      });
+    })();
+  </script>
+</body>
+</html>
